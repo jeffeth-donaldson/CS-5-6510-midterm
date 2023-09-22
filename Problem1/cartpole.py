@@ -55,17 +55,18 @@ class CartPoleEnv(gym.Env):
 
     def __init__(self):
         self.gravity = 9.8
-        self.masscart = 1.0
-        self.masspole = 0.1
+        self.masscart = 3.0
+        self.masspole = 0.5
         self.total_mass = self.masspole + self.masscart
-        self.length = 0.5  # actually half the pole's length
+        self.length = 0.4  # actually half the pole's length
         self.polemass_length = self.masspole * self.length
         self.force_mag = 10.0
         self.tau = 0.02  # seconds between state updates
         self.kinematics_integrator = "euler"
 
         # Angle at which to fail the episode
-        self.theta_threshold_radians = 12 * 2 * math.pi / 360
+        # self.theta_threshold_radians = 12 * 2 * math.pi / 360
+        self.theta_threshold_radians = math.pi
         self.x_threshold = 2.4
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
