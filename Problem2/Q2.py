@@ -4,6 +4,7 @@ import matplotlib.patches as patches
 
 VELOCITY = 8
 LENGTH = 10.668
+WIDTH = 3.048
 REFRESH_RATE = 0.5 #in seconds
 # REFRESH_RATE = 0.01 #in seconds
 IDEAL_REFRESH = .01
@@ -79,3 +80,17 @@ if __name__ == '__main__':
     p1Car.drive(15, np.arctan(LENGTH / RADIUS))
 
     p1Car.plot()
+
+    # Part 2 - Differential Steering
+    # L:R power ratio = (r + (L/2)) / (r - (L/2))
+    p2Car = (Car(0, 0, 0))
+    
+    # Get to edge of cirlce
+    # r = 9, L = 3.048
+    # R:L ratio = (9 + (3.048/2)) / ((9 - (3.048/2)) = 1.4077046548956662
+    # R power set to 100 and L power set to 140.78 for ? seconds
+
+    # Drive along circle
+    # R:L ratio = (18 + (3.048/2)) / ((18 - (3.048/2)) = 1.184996358339403
+    R power set to 100 and L power set to 118.50 for ? seconds
+    
