@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 VELOCITY = 8
+LENGTH = 10.668 # meters
+WIDTH = 3.048 #meters
+REFRESH_RATE = 0.01 #in seconds
+# REFRESH_RATE = 0.01 #in seconds
 LENGTH = 10.668
 WIDTH = 3.048
 # REFRESH_RATE = 0.5 #in seconds
@@ -29,6 +33,25 @@ class Car():
 
             x_vel = VELOCITY * np.sin(self.theta_hist[-1])
             y_vel = VELOCITY * np.cos(self.theta_hist[-1])
+
+            x_next = self.x_hist[-1] + x_vel * REFRESH_RATE
+            y_next = self.y_hist[-1] + y_vel * REFRESH_RATE
+
+            self.x_hist.append(x_next)
+            self.y_hist.append(y_next)
+
+    def diferential_drive(self, duration, turning_radius):
+        right_velocity = (VELOCITY / turning_radius)  * (turning_radius - WIDTH / 2)
+        left_velocity = (VELOCITY / turning_radius)  * (turning_radius + WIDTH / 2)
+        omega_dot = (right_velocity - left_velocity) / WIDTH
+        omega = self.theta_hist[-1]
+        for _ in range(int(duration/REFRESH_RATE)):
+            # omega += omega_dot * REFRESH_RATE
+            theta_next = self.theta_hist[-1] + omega_dot * REFRESH_RATE
+            self.theta_hist.append(theta_next)
+
+            x_vel = -((right_velocity + left_velocity)/2) * np.sin(self.theta_hist[-1])
+            y_vel = ((right_velocity + left_velocity)/2) * np.cos(self.theta_hist[-1])
 
             x_next = self.x_hist[-1] + x_vel * REFRESH_RATE
             y_next = self.y_hist[-1] + y_vel * REFRESH_RATE
@@ -71,6 +94,15 @@ class Car():
 
 if __name__ == '__main__':
     # Part 1 
+    # p1Car = Car(0, 0, 0)
+
+    # # Get to edge of circle
+    # # p1Car.getPath(())
+    # # Loop through thetas on the path and drive for 1 frame each
+    # p1Car.drive((np.pi * 9) / VELOCITY, np.arctan(LENGTH / 9))
+    # # Drive along circle
+
+    # p1Car.drive(15, np.arctan(LENGTH / RADIUS))
     # Initialize Car Location
     p1Car = Car(0, 0, 0)
     angular_velocities = []
@@ -99,7 +131,7 @@ if __name__ == '__main__':
     plt.ylabel('Angular Velocity in Radians/Second')
     plt.show()
 
-    p1Car.plot()
+    # p1Car.plot()
 
     # Part 2 - Differential Steering
     # L:R power ratio = (r + (L/2)) / (r - (L/2))
@@ -109,11 +141,13 @@ if __name__ == '__main__':
     # r = 9, L = 3.048
     # R:L ratio = (9 + (3.048/2)) / ((9 - (3.048/2)) = 1.4077046548956662
     # R power set to 100 and L power set to 140.78 for X seconds
+    steering_radius = 9
+    p2Car.diferential_drive((np.pi * 9) / VELOCITY, steering_radius)
 
     # Drive along circle
     # R:L ratio = (18 + (3.048/2)) / ((18 - (3.048/2)) = 1.184996358339403
     #R power set to 100 and L power set to 118.50 for 2X seconds
-
+    p2Car.plot()
 
     #Part 3 - 
     
