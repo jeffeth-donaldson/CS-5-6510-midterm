@@ -92,6 +92,24 @@ class Car():
         plt.ylabel("Y position in meters from origin")
         plt.show()
 
+    def plot_setup(self):
+        fig, ax = plt.subplots()
+
+        #Plot the boundry circle 
+        circle = patches.Circle((0, 0), radius=RADIUS, fill=False, edgecolor='r', linewidth=3, linestyle='dotted')
+        ax.add_patch(circle)
+        ax.set_xlim(-20, 20)
+        ax.set_ylim(-20, 20)
+        ax.set_aspect('equal', 'box')
+
+        #Plot origin point
+        plt.scatter(0, 0, marker='x', color='red')  
+    def plot_no_graph(self, label):
+        plt.plot(self.x_hist, self.y_hist, linewidth=1, label=label)
+        plt.title("Motion of Skid-Steer Robot")
+        plt.xlabel("X position in meters from origin")
+        plt.ylabel("Y position in meters from origin")
+
 if __name__ == '__main__':
     # Part 1 
     # p1Car = Car(0, 0, 0)
@@ -104,50 +122,60 @@ if __name__ == '__main__':
 
     # p1Car.drive(15, np.arctan(LENGTH / RADIUS))
     # Initialize Car Location
-    p1Car = Car(0, 0, 0)
-    angular_velocities = []
-    time = []
-    # Calculate Radius of circle adjusted for width of car
-    ADJUSTED_RADIUS = np.floor(RADIUS - (WIDTH/2))
-    HALF_CIRCLE_LENGTH = np.pi * (ADJUSTED_RADIUS / 2)
-    print("HALF_CIRCLE_LENGTH / VELOCITY",HALF_CIRCLE_LENGTH / VELOCITY)
-    for i in range(int(HALF_CIRCLE_LENGTH / VELOCITY)):
-        angular_velocities.append(VELOCITY/(ADJUSTED_RADIUS/2))
-        time.append(i)
-    end = time[-1]
-    print("First alpha", np.arctan(LENGTH / (ADJUSTED_RADIUS/2)))
-    p1Car.drive(HALF_CIRCLE_LENGTH / VELOCITY, np.arctan(LENGTH / (ADJUSTED_RADIUS/2)))
-    CIRCUMFERENCE = 2* np.pi * ADJUSTED_RADIUS 
-    print("Second Time:",CIRCUMFERENCE/VELOCITY)
-    for i in range(int(CIRCUMFERENCE/VELOCITY)):
-        angular_velocities.append(VELOCITY/ADJUSTED_RADIUS)
-        time.append(end+i)
-    print("Second alpha",np.arctan(LENGTH / ADJUSTED_RADIUS))   
-    p1Car.drive(CIRCUMFERENCE/VELOCITY, np.arctan(LENGTH / ADJUSTED_RADIUS))
+    # p1Car = Car(0, 0, 0)
+    # angular_velocities = []
+    # time = []
+    # # Calculate Radius of circle adjusted for width of car
+    # ADJUSTED_RADIUS = np.floor(RADIUS - (WIDTH/2))
+    # HALF_CIRCLE_LENGTH = np.pi * (ADJUSTED_RADIUS / 2)
+    # print("HALF_CIRCLE_LENGTH / VELOCITY",HALF_CIRCLE_LENGTH / VELOCITY)
+    # for i in range(int(HALF_CIRCLE_LENGTH / VELOCITY)):
+    #     angular_velocities.append(VELOCITY/(ADJUSTED_RADIUS/2))
+    #     time.append(i)
+    # end = time[-1]
+    # print("First alpha", np.arctan(LENGTH / (ADJUSTED_RADIUS/2)))
+    # p1Car.drive(HALF_CIRCLE_LENGTH / VELOCITY, np.arctan(LENGTH / (ADJUSTED_RADIUS/2)))
+    # CIRCUMFERENCE = 2* np.pi * ADJUSTED_RADIUS 
+    # print("Second Time:",CIRCUMFERENCE/VELOCITY)
+    # for i in range(int(CIRCUMFERENCE/VELOCITY)):
+    #     angular_velocities.append(VELOCITY/ADJUSTED_RADIUS)
+    #     time.append(end+i)
+    # print("Second alpha",np.arctan(LENGTH / ADJUSTED_RADIUS))   
+    # p1Car.drive(CIRCUMFERENCE/VELOCITY, np.arctan(LENGTH / ADJUSTED_RADIUS))
 
-    plt.plot(time, angular_velocities)
-    plt.title('Angular Velocity of Ackermann Robot')
-    plt.xlabel('Time in seconds')
-    plt.ylabel('Angular Velocity in Radians/Second')
-    plt.show()
+    # plt.plot(time, angular_velocities)
+    # plt.title('Angular Velocity of Ackermann Robot')
+    # plt.xlabel('Time in seconds')
+    # plt.ylabel('Angular Velocity in Radians/Second')
+    # plt.show()
 
     # p1Car.plot()
 
     # Part 2 - Differential Steering
     # L:R power ratio = (r + (L/2)) / (r - (L/2))
-    p2Car = (Car(0, 0, 0))
+    # p2Car = (Car(0, 0, 0))
     
     # Get to edge of cirlce
     # r = 9, L = 3.048
     # R:L ratio = (9 + (3.048/2)) / ((9 - (3.048/2)) = 1.4077046548956662
     # R power set to 100 and L power set to 140.78 for X seconds
-    steering_radius = 9
-    p2Car.diferential_drive((np.pi * 9) / VELOCITY, steering_radius)
+    # steering_radius = 9
+    # p2Car.diferential_drive((np.pi * 9) / VELOCITY, steering_radius)
 
     # Drive along circle
     # R:L ratio = (18 + (3.048/2)) / ((18 - (3.048/2)) = 1.184996358339403
     #R power set to 100 and L power set to 118.50 for 2X seconds
-    p2Car.plot()
+    # p2Car.plot()
 
     #Part 3 - 
+    RADIUS = 9 #meters
+    Car(RADIUS, 0, 0).plot_setup()
+    for delta in [1, 0.1, 0.01]:
+        REFRESH_RATE = delta
+        p3Car = Car(RADIUS, 0, 0)
+        p3Car.diferential_drive(2*RADIUS*np.pi/VELOCITY, -RADIUS)
+
+        p3Car.plot_no_graph(f'{1/delta}Hz')
+    plt.legend()
+    plt.show()
     
