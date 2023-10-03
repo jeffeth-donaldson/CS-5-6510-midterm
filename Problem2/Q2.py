@@ -5,8 +5,8 @@ import matplotlib.patches as patches
 VELOCITY = 8
 LENGTH = 10.668
 WIDTH = 3.048
-REFRESH_RATE = 0.5 #in seconds
-# REFRESH_RATE = 0.01 #in seconds
+# REFRESH_RATE = 0.5 #in seconds
+REFRESH_RATE = 0.01 #in seconds
 IDEAL_REFRESH = .01
 RADIUS = 18 # 18 meters
 
@@ -64,20 +64,26 @@ class Car():
         plt.scatter(0, 0, marker='x', color='red')  
 
         plt.plot(self.x_hist, self.y_hist, linewidth=1)
+        plt.title("Motion of Ackerman Robot")
+        plt.xlabel("X position in meters from origin")
+        plt.ylabel("Y position in meters from origin")
         plt.show()
-
 
 if __name__ == '__main__':
     # Part 1 
+    # Initialize Car Location
     p1Car = Car(0, 0, 0)
+    # Calculate Radius of circle adjusted for width of car
+    ADJUSTED_RADIUS = np.floor(RADIUS - (WIDTH/2))
+    HALF_CIRCLE_LENGTH = np.pi * (ADJUSTED_RADIUS / 2)
+    print("HALF_CIRCLE_LENGTH / VELOCITY",HALF_CIRCLE_LENGTH / VELOCITY)
+    print("First alpha", np.arctan(LENGTH / (ADJUSTED_RADIUS/2)))
+    p1Car.drive(HALF_CIRCLE_LENGTH / VELOCITY, np.arctan(LENGTH / (ADJUSTED_RADIUS/2)))
+    CIRCUMFERENCE = 2* np.pi * ADJUSTED_RADIUS 
+    print("Second Time:",CIRCUMFERENCE/VELOCITY)
+    print("Second alpha",np.arctan(LENGTH / ADJUSTED_RADIUS))   
+    p1Car.drive(CIRCUMFERENCE/VELOCITY, np.arctan(LENGTH / ADJUSTED_RADIUS))
 
-    # Get to edge of circle
-    p1Car.getPath(())
-    # Loop through thetas on the path and drive for 1 frame each
-    p1Car.drive((np.pi * 9) / VELOCITY, np.arctan(LENGTH / 9))
-    # Drive along circle
-
-    p1Car.drive(15, np.arctan(LENGTH / RADIUS))
 
     p1Car.plot()
 
