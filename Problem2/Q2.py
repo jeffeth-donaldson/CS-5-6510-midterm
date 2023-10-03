@@ -141,12 +141,12 @@ if __name__ == '__main__':
     # r = 9, L = 3.048
     # R:L ratio = (9 + (3.048/2)) / ((9 - (3.048/2)) = 1.4077046548956662
     # R power set to 100 and L power set to 140.78 for X seconds
-    steering_radius = 9
-    p2Car.diferential_drive((np.pi * 9) / VELOCITY, steering_radius)
+    p2Car.diferential_drive((np.pi * ADJUSTED_RADIUS / 2) / VELOCITY, ADJUSTED_RADIUS / 2)
 
     # Drive along circle
     # R:L ratio = (18 + (3.048/2)) / ((18 - (3.048/2)) = 1.184996358339403
     #R power set to 100 and L power set to 118.50 for 2X seconds
+    p2Car.diferential_drive((2 * (np.pi * ADJUSTED_RADIUS) / VELOCITY), ADJUSTED_RADIUS)
     p2Car.plot()
 
     #Part 3 - 
