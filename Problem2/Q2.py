@@ -73,17 +73,31 @@ if __name__ == '__main__':
     # Part 1 
     # Initialize Car Location
     p1Car = Car(0, 0, 0)
+    angular_velocities = []
+    time = []
     # Calculate Radius of circle adjusted for width of car
     ADJUSTED_RADIUS = np.floor(RADIUS - (WIDTH/2))
     HALF_CIRCLE_LENGTH = np.pi * (ADJUSTED_RADIUS / 2)
     print("HALF_CIRCLE_LENGTH / VELOCITY",HALF_CIRCLE_LENGTH / VELOCITY)
+    for i in range(int(HALF_CIRCLE_LENGTH / VELOCITY)):
+        angular_velocities.append(VELOCITY/(ADJUSTED_RADIUS/2))
+        time.append(i)
+    end = time[-1]
     print("First alpha", np.arctan(LENGTH / (ADJUSTED_RADIUS/2)))
     p1Car.drive(HALF_CIRCLE_LENGTH / VELOCITY, np.arctan(LENGTH / (ADJUSTED_RADIUS/2)))
     CIRCUMFERENCE = 2* np.pi * ADJUSTED_RADIUS 
     print("Second Time:",CIRCUMFERENCE/VELOCITY)
+    for i in range(int(CIRCUMFERENCE/VELOCITY)):
+        angular_velocities.append(VELOCITY/ADJUSTED_RADIUS)
+        time.append(end+i)
     print("Second alpha",np.arctan(LENGTH / ADJUSTED_RADIUS))   
     p1Car.drive(CIRCUMFERENCE/VELOCITY, np.arctan(LENGTH / ADJUSTED_RADIUS))
 
+    plt.plot(time, angular_velocities)
+    plt.title('Angular Velocity of Ackermann Robot')
+    plt.xlabel('Time in seconds')
+    plt.ylabel('Angular Velocity in Radians/Second')
+    plt.show()
 
     p1Car.plot()
 
