@@ -88,9 +88,12 @@ if __name__ == '__main__':
     # Get to edge of cirlce
     # r = 9, L = 3.048
     # R:L ratio = (9 + (3.048/2)) / ((9 - (3.048/2)) = 1.4077046548956662
-    # R power set to 100 and L power set to 140.78 for ? seconds
+    # R power set to 100 and L power set to 140.78 for X seconds
 
     # Drive along circle
     # R:L ratio = (18 + (3.048/2)) / ((18 - (3.048/2)) = 1.184996358339403
-    R power set to 100 and L power set to 118.50 for ? seconds
+    #R power set to 100 and L power set to 118.50 for 2X seconds
+
+
+    #Part 3 - 
     
