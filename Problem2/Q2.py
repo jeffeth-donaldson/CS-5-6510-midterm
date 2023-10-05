@@ -159,23 +159,54 @@ if __name__ == '__main__':
     # r = 9, L = 3.048
     # R:L ratio = (9 + (3.048/2)) / ((9 - (3.048/2)) = 1.4077046548956662
     # R power set to 100 and L power set to 140.78 for X seconds
-    p2Car.diferential_drive((np.pi * ADJUSTED_RADIUS / 2) / VELOCITY, ADJUSTED_RADIUS / 2)
+    # p2Car.diferential_drive((np.pi * ADJUSTED_RADIUS / 2) / VELOCITY, ADJUSTED_RADIUS / 2)
 
     # Drive along circle
     # R:L ratio = (18 + (3.048/2)) / ((18 - (3.048/2)) = 1.184996358339403
     #R power set to 100 and L power set to 118.50 for 2X seconds
-    p2Car.diferential_drive((2 * (np.pi * ADJUSTED_RADIUS) / VELOCITY), ADJUSTED_RADIUS)
-    p2Car.plot()
+    # p2Car.diferential_drive((2 * (np.pi * ADJUSTED_RADIUS) / VELOCITY), ADJUSTED_RADIUS)
+    # p2Car.plot()
 
     #Part 3 - 
     RADIUS = 9 #meters
     Car(RADIUS, 0, 0).plot_setup()
-    for delta in [1, 0.1, 0.01]:
+    x_res = {}
+    y_res = {}
+    deltas = [1, 0.1, 0.01, 0.001]
+    for delta in deltas:
         REFRESH_RATE = delta
         p3Car = Car(RADIUS, 0, 0)
         p3Car.diferential_drive(2*RADIUS*np.pi/VELOCITY, -RADIUS)
-
+        x_res[f'd_{delta}'] = p3Car.x_hist
+        y_res[f'd_{delta}'] = p3Car.y_hist
         p3Car.plot_no_graph(f'{1/delta}Hz')
     plt.legend()
     plt.show()
-    
+
+    def find_point_error(x,y,xhat,yhat):
+        err_vec = np.array([x-xhat, y-yhat])
+        err_dist = np.sum(err_vec**2)
+        act_dist = np.sum(np.array([x,y])**2)
+        return err_dist/act_dist
+        
+    for delta in deltas:
+        if delta == deltas[-1]:
+            break
+        name = f'd_{delta}'
+        truth_name = f'd_{deltas[-1]}'
+        timeline = [x*delta for x in range(len(x_res[f'd_{delta}']))]
+        err = []
+        step = int(len(x_res[truth_name])/len(x_res[name]))
+        for i in range(len(timeline)):
+            err.append(find_point_error(
+                x_res[truth_name][i*step],
+                y_res[truth_name][i*step],
+                x_res[name][i],
+                y_res[name][i]
+            ))
+        plt.plot(timeline, err, label=f'{delta}Hz')
+    plt.title("Error of Differential Steering models")
+    plt.xlabel("Time (seconds)")
+    plt.ylabel("Error")
+    plt.legend()
+    plt.show()
