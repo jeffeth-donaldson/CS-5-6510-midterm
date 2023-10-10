@@ -1,0 +1,65 @@
+from __future__ import annotations
+
+from collections import defaultdict
+
+
+import numpy as np
+
+from matplotlib.patches import Patch
+from tqdm import tqdm
+
+import gymnasium as gym
+
+import cartpole
+
+done = False
+env = cartpole.CartPoleEnv()
+
+class CartpoleAgent:
+    def __init__(
+            self,
+            learning_rate: float,
+            initial_epsilon: float,
+            epsilon_decay: float,
+            final_epsilon : float,
+            discount_factor: float = 0.95,
+    ):
+        self.q_values = defaultdict(lambda: np.zeros(env.action_space.n))
+
+        self.lr = learning_rate
+        self.discount_factor = discount_factor
+
+        self.epsilon = initial_epsilon
+        self.epsilon_deday = epsilon_decay
+        self.final_epsilon = final_epsilon
+
+        self.training_error = []
+
+
+    def get_action(self, obs:tuple[int, int, bool]) -> int:
+        if np.random.random() < self.epsilon:
+            return env.action_space.sample()
+        
+        else:
+            return int(np.argmax(self.q_values[obs]))
+        
+    def update(
+            self,
+            obs: tuple[int, int, bool],
+            action: int,
+            reward: float,
+            terminated: bool,
+            next_obs: tuple[int, int, bool],
+    ):
+        future_q_value = (not terminated) * np.max(self.q_values[next_obs])
+        temporal_difference = (
+            reward + self.discount_factor * future_q_value - self.q_values[obs][action]
+        )
+
+        self.q_values[obs][action] = (
+            self.q_values[obs][action] + self.lr * temporal_difference
+        )
+        self.training_error.append(temporal_difference)
+
+        def decay_epsilon(self):
+            self.epsilon = max(self.final_epsilon, self.epsilon - self.epsilon_decay)
