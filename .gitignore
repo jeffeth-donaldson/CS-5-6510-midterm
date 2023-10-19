@@ -161,3 +161,7 @@ cython_debug/
 
 */videos/*
 .vscode
+full_store/
+Store.zip
+full_store.zip
+grocerystore.zip
