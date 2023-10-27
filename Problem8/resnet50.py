@@ -5,9 +5,10 @@
 # bugs to vladimir kulyukin, chris allred on canvas
 #####################################################
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import torch
 from torchvision import datasets, models, transforms
 import torch.nn as nn
@@ -29,6 +30,7 @@ data_transforms = {
     'validation':
     transforms.Compose([
         transforms.Resize((224,224)),
+        transforms.Grayscale(num_output_channels=3),
         transforms.ToTensor(),
         normalize
     ]),
@@ -36,9 +38,9 @@ data_transforms = {
 
 image_datasets = {
 'train':
-    datasets.ImageFolder('data/full_store/train', data_transforms['train']),
+    datasets.ImageFolder('Problem8/data/full_store/train', data_transforms['train']),
     'validation':
-    datasets.ImageFolder('data/full_store/valid', data_transforms['validation'])
+    datasets.ImageFolder('Problem8/data/full_store/valid', data_transforms['validation'])
 }
 
 dataloaders = {
@@ -62,7 +64,7 @@ for param in model.parameters():
     model.fc = nn.Sequential(
         nn.Linear(2048, 128),
         nn.ReLU(inplace=True),
-        nn.Linear(128, 2)).to(device)
+        nn.Linear(128, 12)).to(device)
 
 loss_fun = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.fc.parameters())
@@ -97,44 +99,68 @@ def train_model(model, loss_fun, optimizer, num_epochs=3):
                                                         epoch_acc.item()))
     return model
 
-model_trained = train_model(model, loss_fun, optimizer, num_epochs=5)
-torch.save(model_trained.state_dict(), 'resnet50_store.h5')
+# model_trained = train_model(model, loss_fun, optimizer, num_epochs=5)
+# torch.save(model_trained.state_dict(), 'resnet50_store.h5')
 
 model = models.resnet50(pretrained=False).to(device)
 model.fc = nn.Sequential(nn.Linear(2048, 128),
                          nn.ReLU(inplace=True),
-                         nn.Linear(128, 2)).to(device)
-model.load_state_dict(torch.load('resnet50_bee4.h5'))
+                         nn.Linear(128, 12)).to(device)
+model.load_state_dict(torch.load('resnet50_store.h5'))
 
-validation_img_paths = ['data//valid/bee/32_1180_yb.png',
-                        'data/BEE4/valid/bee/80_46_yb.png',
-                        'data/BEE4/valid/nobee/192_168_4_5-2017-05-13_16-38-06_27_223_18.png',
-                        'data/BEE4/valid/nobee/192_168_4_8-2017-05-08_15-45-28_187_261_195.png']
-img_list = [Image.open(img_path) for img_path in validation_img_paths]
-
-validation_batch = torch.stack([data_transforms['validation'](img).to(device)
-                                for img in img_list])
-
-pred_logits_tensor = model(validation_batch)
-pred_probs = F.softmax(pred_logits_tensor, dim=1).cpu().data.numpy()
-
+test_path = 'Problem8/data/grocerystore'
+validation_img_paths = [f'{test_path}/{f}' for f in os.listdir(test_path) if os.path.isfile(os.path.join(test_path, f))]
+img_list = [Image.open(img_path) for img_path in validation_img_paths][:100]
+print("Loaded image list")
+categories = ['bakery', 'bookstore', 'clothingstore', 'deli','florist', 'grocerystore', 'jewelleryshop', 'laundromat', 'mall', 'shoeshop', 'toystore', 'videostore']
 for i, img in enumerate(img_list):
-    title_str = f'{100*pred_probs[i,0]:.0f}% Bee, {100*pred_probs[i,1]:.0f}%␣noBee'
-    print(title_str)
+    validation_batch = torch.stack([data_transforms['validation'](img).to(device)])
+    print("Created validation batch")
+    pred_logits_tensor = model(validation_batch)
+    print("built tensor")
+    pred_probs = F.softmax(pred_logits_tensor, dim=1).cpu().data.numpy()
+    print(pred_probs)
+    # Create a drawing context
+    draw = ImageDraw.Draw(img)
 
-samples_size=5
-# randomly sample validation images and display the network performance on each image.
-for _ in range(2):
-    rand_idx = np.random.randint(0, len(image_datasets['validation']), size=samples_size)
-    for i, idx in enumerate(rand_idx):
-        # get the image without transform
-        untransformed, _ = image_datasets['validation'][idx]
-        sample_image, class_label = image_datasets['validation'][idx]
-        with torch.no_grad():
-            outputs = model(sample_image.unsqueeze(0).to(device))
-            _, preds = torch.max(outputs, 1)
-            pred_probs = F.softmax(outputs, dim=1).cpu().data.numpy().squeeze()
-        performance_str = f'{image_datasets["validation"].classes[preds]}: {pred_probs[preds]*100:.2f}%\ntrue: {image_datasets["validation"].classes[class_label]}'
-        print('------\n{}\n'.format(performance_str))
+    # Define the font and size for the label
+    font = ImageFont.load_default()  # You can customize the font and size as needed
+
+    # Define the position where you want to draw the label
+    position = (10, 10)  # Adjust the coordinates as per your preference
+
+    label = ""
+    confidence = -1
+    for j, cat in enumerate(categories):
+        next_prob = 100*pred_probs[0,j]
+        if next_prob > confidence:
+            label = cat
+            confidence = next_prob
+    # Create the label text
+    label_text = f"Class: {label} (Confidence: {confidence:.2f})"
+
+    # Draw the label on the image
+    draw.text(position, label_text, fill="white", font=font)
+
+    # Save the labeled image to a separate file
+    dir = 'Problem8/labels/resnet50'
+    os.makedirs(dir, exist_ok=True)
+    img.save(f'{dir}/labeled_image{i}.jpg')
+    print(f'wrote out image {i}')
+
+# samples_size=5
+# # randomly sample validation images and display the network performance on each image.
+# for _ in range(2):
+#     rand_idx = np.random.randint(0, len(image_datasets['validation']), size=samples_size)
+#     for i, idx in enumerate(rand_idx):
+#         # get the image without transform
+#         untransformed, _ = image_datasets['validation'][idx]
+#         sample_image, class_label = image_datasets['validation'][idx]
+#         with torch.no_grad():
+#             outputs = model(sample_image.unsqueeze(0).to(device))
+#             _, preds = torch.max(outputs, 1)
+#             pred_probs = F.softmax(outputs, dim=1).cpu().data.numpy().squeeze()
+#         performance_str = f'{image_datasets["validation"].classes[preds]}: {pred_probs[preds]*100:.2f}%\ntrue: {image_datasets["validation"].classes[class_label]}'
+#         print('------\n{}\n'.format(performance_str))
         
 print('Done...')
