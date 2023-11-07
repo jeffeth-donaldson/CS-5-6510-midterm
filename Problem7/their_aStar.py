@@ -10,14 +10,11 @@ See Wikipedia article (https://en.wikipedia.org/wiki/A*_search_algorithm)
 """
 
 import math
-
 import matplotlib.pyplot as plt
 
-show_animation = True
-
+show_animation = False
 
 class AStarPlanner:
-
     def __init__(self, ox, oy, resolution, rr):
         """
         Initialize grid map for a star planning
@@ -43,6 +40,7 @@ class AStarPlanner:
             self.y = y  # index of grid
             self.cost = cost
             self.parent_index = parent_index
+            self.complition_time = None
 
         def __str__(self):
             return str(self.x) + "," + str(self.y) + "," + str(
@@ -129,7 +127,7 @@ class AStarPlanner:
 
         rx, ry = self.calc_final_path(goal_node, closed_set)
 
-        return rx, ry
+        return rx, ry, goal_node.cost
 
     def calc_final_path(self, goal_node, closed_set):
         # generate final course
@@ -270,13 +268,14 @@ def main():
         plt.axis("equal")
 
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
-    rx, ry = a_star.planning(sx, sy, gx, gy)
+    rx, ry, total_cost = a_star.planning(sx, sy, gx, gy)
+    # print(f"total_cost: {total_cost}")
 
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
         plt.pause(0.001)
         plt.show()
 
-
+    return len(rx)
 if __name__ == '__main__':
     main()

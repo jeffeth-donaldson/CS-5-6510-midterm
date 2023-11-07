@@ -14,7 +14,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
 from RRT.rrt import RRT
 
-show_animation = True
+show_animation = False
 
 
 class RRTStar(RRT):
@@ -32,10 +32,10 @@ class RRTStar(RRT):
                  goal,
                  obstacle_list,
                  rand_area,
-                 expand_dis=30.0,
+                 expand_dis=300.0,
                  path_resolution=1.0,
                  goal_sample_rate=20,
-                 max_iter=300,
+                 max_iter=600,
                  connect_circle_dist=50.0,
                  search_until_max_iter=False,
                  robot_radius=0.0):
@@ -65,7 +65,7 @@ class RRTStar(RRT):
 
         self.node_list = [self.start]
         for i in range(self.max_iter):
-            print("Iter:", i, ", number of nodes:", len(self.node_list))
+            # print("Iter:", i, ", number of nodes:", len(self.node_list))
             rnd = self.get_random_node()
             nearest_ind = self.get_nearest_node_index(self.node_list, rnd)
             new_node = self.steer(self.node_list[nearest_ind], rnd,
@@ -102,6 +102,18 @@ class RRTStar(RRT):
             return self.generate_final_course(last_index)
 
         return None
+    
+    def generate_final_course(self, goal_ind):
+        path = [[self.end.x, self.end.y]]
+        node = self.node_list[goal_ind]
+        total_cost = node.cost
+        while node.parent is not None:
+            path.append([node.x, node.y])
+            # print(f"This node cost: {node.cost}")
+            node = node.parent
+        path.append([node.x, node.y])
+
+        return path, total_cost
 
     def choose_parent(self, new_node, near_inds):
         """
@@ -240,49 +252,57 @@ class RRTStar(RRT):
         return from_node.cost + d
 
     def propagate_cost_to_leaves(self, parent_node):
-
         for node in self.node_list:
             if node.parent == parent_node:
                 node.cost = self.calc_new_cost(parent_node, node)
                 self.propagate_cost_to_leaves(node)
 
-
 def main():
     print("Start " + __file__)
 
     # ====Search Path with RRT====
+    
     obstacle_list = [
-        (5, 5, 1),
-        (3, 6, 2),
-        (3, 8, 2),
-        (3, 10, 2),
-        (7, 5, 2),
-        (9, 5, 2),
-        (8, 10, 1),
-        (6, 12, 1),
     ]  # [x,y,size(radius)]
+
+    for i in range(-10, 60):
+        obstacle_list.append((i, -10, 1))
+    for i in range(-10, 60):
+        obstacle_list.append((60, i, 1))
+    for i in range(-10, 61):
+        obstacle_list.append((i, 60, 1))
+    for i in range(-10, 61):
+        obstacle_list.append((-10, i, 1))
+    for i in range(-10, 40):
+        obstacle_list.append((20, i, 1))
+    for i in range(0, 40):
+        obstacle_list.append((40, 60 - i, 1))
 
     # Set Initial parameters
     rrt_star = RRTStar(
-        start=[0, 0],
-        goal=[6, 10],
-        rand_area=[-2, 15],
+        start=[10, 10],
+        goal=[50, 50],
+        rand_area=[-10, 60],
         obstacle_list=obstacle_list,
-        expand_dis=1,
-        robot_radius=0.8)
-    path = rrt_star.planning(animation=show_animation)
-
+        expand_dis=25,
+        robot_radius=1)
+    path, final_cost = rrt_star.planning(animation=show_animation)
+    grid_size = 2.0  # [m]
+    comparative_cost = final_cost / grid_size
+    
     if path is None:
         print("Cannot find path")
     else:
         print("found path!!")
 
         # Draw final path
-        if show_animation:
-            rrt_star.draw_graph()
-            plt.plot([x for (x, y) in path], [y for (x, y) in path], 'r--')
-            plt.grid(True)
-            plt.show()
+        # if show_animation:
+    # rrt_star.draw_graph()
+    # plt.plot([x for (x, y) in path], [y for (x, y) in path], 'r--')
+    # plt.grid(True)
+    # plt.show()
+
+    return comparative_cost
 
 
 if __name__ == '__main__':

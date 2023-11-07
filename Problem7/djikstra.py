@@ -9,7 +9,7 @@ author: Atsushi Sakai(@Atsushi_twi)
 import matplotlib.pyplot as plt
 import math
 
-show_animation = True
+show_animation = False
 
 
 class Dijkstra:
@@ -120,7 +120,7 @@ class Dijkstra:
 
         rx, ry = self.calc_final_path(goal_node, closed_set)
 
-        return rx, ry
+        return rx, ry, current.cost
 
     def calc_final_path(self, goal_node, closed_set):
         # generate final course
@@ -247,12 +247,16 @@ def main():
         plt.axis("equal")
 
     dijkstra = Dijkstra(ox, oy, grid_size, robot_radius)
-    rx, ry = dijkstra.planning(sx, sy, gx, gy)
+    rx, ry, final_cost = dijkstra.planning(sx, sy, gx, gy)
+
+    print(f"final_cost: {final_cost}")
 
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
         plt.pause(0.01)
         plt.show()
+
+    return len(rx)
 
 
 if __name__ == '__main__':
