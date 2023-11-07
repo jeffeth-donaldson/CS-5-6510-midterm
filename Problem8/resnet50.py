@@ -1,10 +1,3 @@
-#####################################################
-# resnet50_image.py
-# training and validating ResNet50 on
-# the BEE4 image dataset.
-# bugs to vladimir kulyukin, chris allred on canvas
-#####################################################
-
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,6 +8,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 import torch.optim as optim
 
+# Adapted from Dr. Vladimir Kulyukin's resnet50 implementation
 
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
@@ -122,12 +116,8 @@ for i, img in enumerate(img_list):
     print(pred_probs)
     # Create a drawing context
     draw = ImageDraw.Draw(img)
-
-    # Define the font and size for the label
-    font = ImageFont.load_default()  # You can customize the font and size as needed
-
-    # Define the position where you want to draw the label
-    position = (10, 10)  # Adjust the coordinates as per your preference
+    font = ImageFont.load_default()
+    position = (10, 10)
 
     label = ""
     confidence = -1
@@ -136,10 +126,8 @@ for i, img in enumerate(img_list):
         if next_prob > confidence:
             label = cat
             confidence = next_prob
-    # Create the label text
+    
     label_text = f"Class: {label} (Confidence: {confidence:.2f})"
-
-    # Draw the label on the image
     draw.text(position, label_text, fill="white", font=font)
 
     # Save the labeled image to a separate file
@@ -147,20 +135,5 @@ for i, img in enumerate(img_list):
     os.makedirs(dir, exist_ok=True)
     img.save(f'{dir}/labeled_image{i}.jpg')
     print(f'wrote out image {i}')
-
-# samples_size=5
-# # randomly sample validation images and display the network performance on each image.
-# for _ in range(2):
-#     rand_idx = np.random.randint(0, len(image_datasets['validation']), size=samples_size)
-#     for i, idx in enumerate(rand_idx):
-#         # get the image without transform
-#         untransformed, _ = image_datasets['validation'][idx]
-#         sample_image, class_label = image_datasets['validation'][idx]
-#         with torch.no_grad():
-#             outputs = model(sample_image.unsqueeze(0).to(device))
-#             _, preds = torch.max(outputs, 1)
-#             pred_probs = F.softmax(outputs, dim=1).cpu().data.numpy().squeeze()
-#         performance_str = f'{image_datasets["validation"].classes[preds]}: {pred_probs[preds]*100:.2f}%\ntrue: {image_datasets["validation"].classes[class_label]}'
-#         print('------\n{}\n'.format(performance_str))
         
 print('Done...')

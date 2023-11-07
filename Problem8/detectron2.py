@@ -13,6 +13,13 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 # Give metrics on relative segmentation/classification quality
 # comparing Mask R-CNN, faster R-CNN, and RetinaNet.
 
+# Model zoo locations
+# Faster R-CCN - COCO-Detection/faster_rcnn_R_50_C4_1x.yaml
+# RetinaNet - COCO-Detection/retinanet_R_50_FPN_1x.yaml
+# Mask R-CNN - COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml
+
+# TO run with a different model replace on lines 26 and 29
+
 # Mask R-CNN
 cfg = get_cfg()
 # add project-specific config (e.g., TensorMask) here if you're not running a model in detectron2's core library
