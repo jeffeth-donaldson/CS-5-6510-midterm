@@ -1,5 +1,7 @@
 # Problem 8
 
+See labels.zip for labeled/classified images from each part
+
 ## Part a
 
 - see `resnet50.py` for the image classification 
