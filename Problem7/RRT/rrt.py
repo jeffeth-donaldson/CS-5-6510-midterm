@@ -110,7 +110,6 @@ class RRT:
                 if self.check_collision(
                         final_node, self.obstacle_list, self.robot_radius):
                     return self.generate_final_course(len(self.node_list) - 1)
-
             if animation and i % 5:
                 self.draw_graph(rnd_node)
 
@@ -149,12 +148,15 @@ class RRT:
     def generate_final_course(self, goal_ind):
         path = [[self.end.x, self.end.y]]
         node = self.node_list[goal_ind]
+        total_distance = 0
         while node.parent is not None:
             path.append([node.x, node.y])
+            distance, _ = self.calc_distance_and_angle(node, node.parent)
+            total_distance += distance
             node = node.parent
         path.append([node.x, node.y])
 
-        return path
+        return path, total_distance
 
     def calc_dist_to_goal(self, x, y):
         dx = x - self.end.x
@@ -199,7 +201,7 @@ class RRT:
         plt.plot(self.start.x, self.start.y, "xr")
         plt.plot(self.end.x, self.end.y, "xr")
         plt.axis("equal")
-        plt.axis([-2, 15, -2, 15])
+        plt.axis([-20, 70, -20, 70])
         plt.grid(True)
         plt.pause(0.01)
 
@@ -257,8 +259,7 @@ class RRT:
 
 
 def main(gx=6.0, gy=10.0):
-    print("start " + __file__)
-
+    # print("start " + __file__)
     # ====Search Path with RRT====
     obstacleList = [(5, 5, 1), (3, 6, 2), (3, 8, 2), (3, 10, 2), (7, 5, 2),
                     (9, 5, 2), (8, 10, 1)]  # [x, y, radius]
@@ -271,8 +272,8 @@ def main(gx=6.0, gy=10.0):
         # play_area=[0, 10, 0, 14]
         robot_radius=0.8
         )
-    path = rrt.planning(animation=show_animation)
-
+    path, distance = rrt.planning(animation=show_animation)
+    # print(distance)
     if path is None:
         print("Cannot find path")
     else:
@@ -285,7 +286,6 @@ def main(gx=6.0, gy=10.0):
             plt.grid(True)
             plt.pause(0.01)  # Need for Mac
             plt.show()
-
 
 if __name__ == '__main__':
     main()
