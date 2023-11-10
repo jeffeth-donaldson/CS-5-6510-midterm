@@ -47,7 +47,6 @@ class Node:
         self.y = y
         self.parent = parent
         self.cost_g = 0
-        self.cost_t = 0
         self.cost_h = 0
         self.cost_f = 0
 
@@ -120,8 +119,6 @@ class AStarPlanner:
                 child_node.parent = current_node
                 child_node.cost_g = current_node.cost_g + cost
                 child_node.cost_h = self.calc_h_cost(child_node)
-                child_node.cost_t = self.calc_t_cost(current_node, child_node)
-                # child_node.cost_f = child_node.cost_g + child_node.cost_t + child_node.cost_h
                 child_node.cost_f = child_node.cost_g + child_node.cost_h
 
                 for n in open_list:
@@ -130,19 +127,10 @@ class AStarPlanner:
                 
                 heapq.heappush(open_list, child_node)
         return None
-        
-    @staticmethod
-    def calc_t_cost(current, child):
-        #Uphill
-        if terrain_map[current.y][current.x] < terrain_map[child.y][child.x]:
-            return 3
-        elif terrain_map[current.y][current.x] > terrain_map[child.y][child.x]:
-            return 1.5
-        else:
-            return 2
+    
         
     def calc_h_cost(self, node):
-        w = 0.5  # weight of heuristic
+        w = 2  # weight of heuristic
         return w * math.sqrt((node.x - self.end_node.x)**2 + (node.y - self.end_node.y)**2)
 
     

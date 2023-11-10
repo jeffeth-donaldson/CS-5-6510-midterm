@@ -27,14 +27,12 @@ algo_list = [
 def results_wrapper(test_func, cost_list):
     cost_list.append(test_func())
 
-
 def main():
     for algo in algo_list:
-        algo.avg_time = timeit.timeit(lambda: results_wrapper(algo.test_func, algo.costs), number=5)
+        algo.avg_time = timeit.timeit(lambda: results_wrapper(algo.test_func, algo.costs), number=10)
         algo.avg_costs = sum(algo.costs) / len(algo.costs)
     for algo in algo_list:
         print(f"{algo.name}\n\t avg time: {algo.avg_time} \n\t avg cost: {algo.avg_costs}\n")
-
 
 if __name__ == "__main__":
     main()

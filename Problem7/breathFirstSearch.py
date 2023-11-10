@@ -69,7 +69,7 @@ class BreadthFirstSearchPlanner:
 
         while True:
             if len(open_set) == 0:
-                print("Open set is empty..")
+                # print("Open set is empty..")
                 break
 
             current = open_set.pop(list(open_set.keys())[0])
@@ -91,7 +91,7 @@ class BreadthFirstSearchPlanner:
                     plt.pause(0.001)
 
             if current.x == ngoal.x and current.y == ngoal.y:
-                print("Find goal")
+                # print("Find goal")
                 ngoal.parent_index = current.parent_index
                 ngoal.cost = current.cost
                 break
@@ -168,15 +168,15 @@ class BreadthFirstSearchPlanner:
         self.miny = round(min(oy))
         self.maxx = round(max(ox))
         self.maxy = round(max(oy))
-        print("min_x:", self.minx)
-        print("min_y:", self.miny)
-        print("max_x:", self.maxx)
-        print("max_y:", self.maxy)
+        # print("min_x:", self.minx)
+        # print("min_y:", self.miny)
+        # print("max_x:", self.maxx)
+        # print("max_y:", self.maxy)
 
         self.xwidth = round((self.maxx - self.minx) / self.reso)
         self.ywidth = round((self.maxy - self.miny) / self.reso)
-        print("x_width:", self.xwidth)
-        print("y_width:", self.ywidth)
+        # print("x_width:", self.xwidth)
+        # print("y_width:", self.ywidth)
 
         # obstacle map generation
         self.obmap = [[False for _ in range(self.ywidth)]
@@ -247,7 +247,7 @@ def main():
 
     bfs = BreadthFirstSearchPlanner(ox, oy, grid_size, robot_radius)
     rx, ry, total_cost = bfs.planning(sx, sy, gx, gy)
-    print(f"total cost: {total_cost}")
+    # print(f"total cost: {total_cost}")
 
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
