@@ -4,6 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
+BASE_TRAVERSAL_COST = 20
+HEURISTIC_WEIGHT = 1
+TERRAIN_WEIGHT = 1
+
 START_COORDS = (0, 7)
 END_COORDS = (6, 2)
 
@@ -56,6 +60,7 @@ class AStarPlanner:
         self.start_node = start_node
         self.end_node = end_node
         self.terrain_map = terrain_map
+        self.path = None
 
     def find_path(self):
         open_list = []
@@ -82,6 +87,8 @@ class AStarPlanner:
                     path.append(current_node)
                     current_node = current_node.parent
                 path.append(start_node)
+                path.reverse()
+                self.path = path
                 return path
 
             # Generate children nodes
@@ -112,11 +119,12 @@ class AStarPlanner:
                 child_node.cost_g = current_node.cost_g + cost
                 child_node.cost_h = self.calc_h_cost(child_node)
                 child_node.cost_t = self.calc_t_cost(current_node, child_node)
-                # child_node.cost_f = child_node.cost_g + child_node.cost_t + child_node.cost_h
-                child_node.cost_f = child_node.cost_t + child_node.cost_h
+                child_node.cost_f = child_node.cost_g + (child_node.cost_t * TERRAIN_WEIGHT) + child_node.cost_h
+                # child_node.cost_f = child_node.cost_t + child_node.cost_h
+                # child_node.cost_f = child_node.cost_t 
 
                 for n in open_list:
-                    if child_node == n and child_node.cost_g > n.cost_g:
+                    if child_node == n and child_node.cost_f > n.cost_f:
                         continue
                 
                 heapq.heappush(open_list, child_node)
@@ -126,15 +134,21 @@ class AStarPlanner:
     def calc_t_cost(current, child):
         #Uphill
         if terrain_map[current.y][current.x] < terrain_map[child.y][child.x]:
-            return 3
+            return BASE_TRAVERSAL_COST + 1
         elif terrain_map[current.y][current.x] > terrain_map[child.y][child.x]:
-            return 1.5
+            return BASE_TRAVERSAL_COST - 0.5
         else:
-            return 2
+            return BASE_TRAVERSAL_COST
         
     def calc_h_cost(self, node):
-        w = 0.5  # weight of heuristic
-        return w * math.sqrt((node.x - self.end_node.x)**2 + (node.y - self.end_node.y)**2)
+        return HEURISTIC_WEIGHT * math.sqrt((node.x - self.end_node.x)**2 + (node.y - self.end_node.y)**2)
+    
+    def get_path_t_cost(self):
+        t_cost = 0
+        for node in self.path:
+            t_cost += node.cost_t
+        return t_cost
+        
 
     
 
@@ -157,10 +171,17 @@ if __name__ == "__main__":
 
     time_elapsed = end_time - start_time
     print(f"time elapsed: {time_elapsed}")
+    total_t_cost = planner.get_path_t_cost()
+    print(f"t-cost: {total_t_cost}")
 
     path_x = [node.x for node in path]
     path_y = [node.y for node in path]
+    plt.title("Hybrid A* Path")
     plt.plot(path_x, path_y, 'ro-')
+    ax.text(0.05, 0.95, f"T-Cost = {total_t_cost}", transform=ax.transAxes, fontsize=14,
+        verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    ax.text(0.45, 0.95, f"Base Traversal Cost = {BASE_TRAVERSAL_COST}\nHeuristic Weight = x{HEURISTIC_WEIGHT}", transform=ax.transAxes, fontsize=14,
+        verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     plt.show()
 
     for p in path:

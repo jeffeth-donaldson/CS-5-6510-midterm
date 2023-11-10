@@ -9,6 +9,7 @@ import time
 import sys
 
 def main():
+    print(sys.argv[1].split('.'))
     face_detector = FER(mtcnn=False)
     
     # record = {'timestamp': [], 'fps': [], 'cpu_percentage': [], 'angry': [], 'disgust': [], 'fear': [], 'happy': [], 'sad': [], 'surprise': [], 'neutral': []}
@@ -99,7 +100,10 @@ def main():
     plt.title('Detected Emotion')
     ax1.legend(loc='upper left')
     ax2.legend(loc='upper right')
-    plt.show()
+    if len(sys.argv) <= 1:
+        plt.savefig(f"./Results/{str(time.time())}.png")
+    else: 
+        plt.savefig(f"./Results/{sys.argv[1].split('.')[0]}.png")
 
 if __name__ == '__main__':
     main()
