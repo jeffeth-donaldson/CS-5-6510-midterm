@@ -3,7 +3,7 @@ import cv2
 import os
 
 # Scale of the fake pose change
-CHANGE = 2
+CHANGE = 5
 
 class MonoVideoOdometery(object):
     def __init__(self, 
@@ -184,17 +184,33 @@ class MonoVideoOdometery(object):
         y = y_prev
         z = z_prev
 
-        # if (self.count >= 750):
-        #     z = z - CHANGE
-        # elif (self.count >= 500):
-        #     x = x - CHANGE
-        # elif (self.count >= 250):
-        #     z = z + CHANGE
-        # else:
-        #     x = x + CHANGE
+        if (self.count <= 25):
+            z = z + CHANGE
+        elif (self.count <= 40):
+            x = x - CHANGE
+        elif (self.count <= 65):
+            z = z - CHANGE
+        elif (self.count <= 80):
+            x = x + CHANGE
+        elif (self.count <= 105):
+            z = z + CHANGE
+        elif (self.count <= 120):
+            x = x - CHANGE
+        elif (self.count <= 145):
+            z = z - CHANGE
+        elif (self.count <= 160):
+            x = x + CHANGE
+        elif (self.count <= 185):
+            z = z + CHANGE
+        elif (self.count <= 200):
+            x = x - CHANGE
+        elif (self.count <= 225):
+            z = z - CHANGE
+        else:
+            x = x + CHANGE
 
-        x = x + CHANGE
-        z = z + CHANGE
+        # x = x + CHANGE
+        # z = z + CHANGE
 
         self.x = x
         self.y = y
