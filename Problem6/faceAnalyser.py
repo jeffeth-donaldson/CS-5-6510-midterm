@@ -9,16 +9,11 @@ import time
 import sys
 
 def main():
-    print(sys.argv[1].split('.'))
     face_detector = FER(mtcnn=False)
     
-    # record = {'timestamp': [], 'fps': [], 'cpu_percentage': [], 'angry': [], 'disgust': [], 'fear': [], 'happy': [], 'sad': [], 'surprise': [], 'neutral': []}
     record = {'timestamp': [], 'angry': [], 'disgust': [], 'fear': [], 'happy': [], 'sad': [], 'surprise': [], 'neutral': []}
     cpu_list = []
     fps_list = []
-
-   
-    #Get image seqence
 
     #Use camera feed if no file is specified
     capture = None
@@ -43,10 +38,13 @@ def main():
             frameCount += 1
             print(emotion_data)
             record['timestamp'].append(int(time.time() - time_start))
-            cpu_list.append(psutil.cpu_percent(interval=1))
+            cpu_list.append(psutil.cpu_percent())
             # record['cpu_percentage'].append(psutil.cpu_percent(interval=1))
+            try:
+                fps_list.append(frameCount/int(time.time() - time_start))
 
-            fps_list.append(frameCount/int(time.time() - time_start))
+            except:
+                print('failed to append to fps_list')
             # record['fps'].append(frameCount/int(time.time() - time_start))
 
             for emo in emotion_data.keys():
@@ -55,40 +53,30 @@ def main():
                 break
     cv2.destroyAllWindows()
 
-
-    # else:
-    #     capture = cv2.VideoCapture(sys.argv[1])
-    #     input_video = Video(sys.argv[1])
-    #     processing_data = input_video.analyze(face_detector, display=True)
-
-
-
-    #     emo_data = input_video.to_pandas(processing_data)
-    #     emo_data = input_video.get_first_face(emo_data)
-    #     emo_data = input_video.get_emotions(emo_data)
-
-    #     ax = emo_data.plot(figsize=(20, 8))
-
-    #     fig = ax.get_figure()
-    #     ax.ylabel('Emotion Intensity Value')
-    #     ax.xlabel('Video Frame')
-    #     ax.legend()
-    #     ax.savefig(f'{sys.argv[1]}_plot.png')
-
     df = pd.DataFrame.from_dict(record)
     df = pd.DataFrame.set_index(df, 'timestamp')
     print(df.head())
 
     fig, ax1 = plt.subplots()
 
-    for column in df.columns[1:]:
+    for column in df.columns:
         ax1.plot(df.index, df[column], label=column, zorder=2)
 
     ax1.set_xlabel('Time in seconds')
     ax1.set_ylabel('Emotion Score')
 
+    # Get rolling average of CPU
+    smoothed_CPU = []
+    window = 20
+    for i in range(len(cpu_list) - window + 1):
+        # Calculate the average of current window
+        window_average = sum(cpu_list[i:i+window]) / window
+        # Append to the list of moving averages
+        smoothed_CPU.append(window_average)
+
+
     ax2 = ax1.twinx()
-    ax2.bar(df.index, cpu_list, alpha=0.5, label='CPU', zorder=1)
+    ax2.plot(df.index[window-1:], smoothed_CPU, '-k', alpha=1, label='CPU', zorder=1)
     ax2.set_ylabel('CPU Usage in Percentage')
 
     textstr = f'FPS: {round(fps_list[0], 3)}'
@@ -100,10 +88,11 @@ def main():
     plt.title('Detected Emotion')
     ax1.legend(loc='upper left')
     ax2.legend(loc='upper right')
+    ax2.set_ylim(0, 100)
     if len(sys.argv) <= 1:
         plt.savefig(f"./Results/{str(time.time())}.png")
     else: 
-        plt.savefig(f"./Results/{sys.argv[1].split('.')[0]}.png")
+        plt.savefig("./Results/latest.png")
 
 if __name__ == '__main__':
     main()
