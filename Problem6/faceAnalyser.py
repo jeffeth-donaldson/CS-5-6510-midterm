@@ -79,7 +79,8 @@ def main():
     ax2.plot(df.index[window-1:], smoothed_CPU, '-k', alpha=1, label='CPU', zorder=1)
     ax2.set_ylabel('CPU Usage in Percentage')
 
-    textstr = f'FPS: {round(fps_list[0], 3)}'
+    avg_fps = sum(fps_list) / len(fps_list)
+    textstr = f'FPS: {round(avg_fps, 3)}'
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
     # Place the text box at position x=0.05, y=0.95, relative to the figure size
     ax1.text(0.5, 0.95, textstr, transform=ax1.transAxes, fontsize=14,
