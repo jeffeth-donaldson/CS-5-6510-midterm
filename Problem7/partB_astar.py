@@ -5,15 +5,17 @@ import matplotlib.pyplot as plt
 import time
 from queue import PriorityQueue
 
-BASE_TRAVERSAL_COST = 2
+BASE_TRAVERSAL_COST = 1
+UPHILL_COST = 3
+DOWNHILL_GAIN = 1
 HEURISTIC_WEIGHT = 1
-TERRAIN_WEIGHT = 2
+TERRAIN_WEIGHT = 1
 
 START_COORDS = (0, 7)
 END_COORDS = (6, 2)
 
-STARTING_ALT = 0
-ENDING_ALT = 0
+STARTING_ALT = 1
+ENDING_ALT = 2
 
 N = (0, 1)
 NE = (1, 1)
@@ -41,6 +43,17 @@ TERRAIN_MAP = [
     [STARTING_ALT, 1, 1, 1, 1, 1, 1, 1, 2, 2],
 ]
 
+# TERRAIN_MAP = [
+#     [2, 2, 2, 2, 2, 2, 1, 1, 1, 2],
+#     [1, 2, 3, 3, 2, -1, 1, 1, 2, 2],
+#     [1, 2, 3, 2, 1, -1, ENDING_ALT, 3, 3, 2],
+#     [1, 2, 4, 2, 1, -1, 4, 4, 3, 1],
+#     [1, 2, 3, 2, 1, -1, 4, 4, 2, 2],
+#     [1, 2, 1, 2, 1, -1, -1, -1,-1, 1],
+#     [1, 1, 2, 2, 2, 3, 1, 1, 1, 1],
+#     [STARTING_ALT, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+# ]
+
 class Node:
     def __init__(self, x, y, parent):
         self.x = x
@@ -67,11 +80,11 @@ class AStarPlanner:
 
     def find_path(self):
         open_list = PriorityQueue(500)
-        open_list.put(self.start_node)
+        open_list.put((0, self.start_node))
         closeList = set()
 
         while open_list:
-            current_node = open_list.get()
+            current_node = open_list.get()[1]
             closeList.add((current_node.x, current_node.y))
 
             if show_animation:  # pragma: no cover
@@ -122,9 +135,9 @@ class AStarPlanner:
                 child_node.cost_g = current_node.cost_g + cost
                 child_node.cost_h = self.calc_h_cost(child_node)
                 child_node.cost_t = self.calc_t_cost(current_node, child_node)
-                child_node.cost_f = child_node.cost_g + child_node.cost_h
+                child_node.cost_f =  child_node.cost_g + child_node.cost_h
                 
-                open_list.put(child_node)
+                open_list.put((child_node.cost_f, child_node))
 
                 #replace 
         return None
@@ -143,9 +156,9 @@ class AStarPlanner:
     def calc_t_cost(current, child):
         #Uphill
         if TERRAIN_MAP[current.y][current.x] < TERRAIN_MAP[child.y][child.x]:
-            return BASE_TRAVERSAL_COST + 1
+            return BASE_TRAVERSAL_COST + UPHILL_COST
         elif TERRAIN_MAP[current.y][current.x] > TERRAIN_MAP[child.y][child.x]:
-            return BASE_TRAVERSAL_COST - 0.5
+            return BASE_TRAVERSAL_COST - DOWNHILL_GAIN
         else:
             return BASE_TRAVERSAL_COST
 
@@ -182,6 +195,10 @@ if __name__ == "__main__":
         verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     ax.text(0.45, 0.95, f"Base Traversal Cost = {BASE_TRAVERSAL_COST}\nHeuristic Weight = x{HEURISTIC_WEIGHT}", transform=ax.transAxes, fontsize=14,
         verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    ticks_x = np.arange(-0.5, len(TERRAIN_MAP[0]), 1)
+    ticks_y = np.arange(-0.5, len(TERRAIN_MAP), 1)
+    ax.set_xticks(ticks_x)
+    ax.set_yticks(ticks_y)
 
     plt.show()
 

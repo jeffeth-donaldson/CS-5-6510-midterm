@@ -4,15 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-BASE_TRAVERSAL_COST = 20
+BASE_TRAVERSAL_COST = 0.5
+UPHILL_COST = 5
+DOWNHILL_GAIN = 1
 HEURISTIC_WEIGHT = 1
 TERRAIN_WEIGHT = 1
 
 START_COORDS = (0, 7)
 END_COORDS = (6, 2)
 
-STARTING_ALT = 0
-ENDING_ALT = 0
+STARTING_ALT = 1
+ENDING_ALT = 2
 
 N = (0, 1)
 NE = (1, 1)
@@ -28,7 +30,7 @@ show_animation = False
 sqrt_2 = math.sqrt(2)
 directions_cost_map = {N: 1, NE: sqrt_2, E: 1, SE: sqrt_2, S: 1, SW: sqrt_2, W: 1, NW: sqrt_2}
 
-terrain_map = [
+TERRAIN_MAP = [
     [4, 3, 2, 2, 2, 2, 1, 1, 1, 1],
     [3, 2, 2, -1, 2, 1, 1, 1, 2, 1],
     [3, 2, 2, -1, 2, 1, ENDING_ALT, 3, 3, 1],
@@ -38,6 +40,17 @@ terrain_map = [
     [1, 2, 2, 2, 2, 3, 1, 1, 1, 1],
     [STARTING_ALT, 1, 1, 1, 1, 1, 1, 1, 2, 2],
 ]
+
+# TERRAIN_MAP = [
+#     [1, 1, 2, 2, 2, 2, 1, 1, 1, 2],
+#     [1, 1, -1, -1, -1, -1, 1, 1, 2, 2],
+#     [1, 2, 3, 4, 2, -1, ENDING_ALT, 3, 3, 2],
+#     [1, 2, 4, 2, 2, -1, 4, 4, 3, 2],
+#     [1, 2, 3, 2, 3, -1, 3, 4, 3, 2],
+#     [1, 2, 2, 2, 3, -1, 2, 3, 2, 2],
+#     [1, 1, 1, 2, 3, 3, 2, 2, 2, 2],
+#     [STARTING_ALT, 1, 2, 1, 1, 2, 2, 2, 2, 2],
+# ]
 class Node:
     def __init__(self, x, y, parent):
         self.x = x
@@ -105,7 +118,7 @@ class AStarPlanner:
                     continue
 
                 # Check that this location isn't in lake
-                if terrain_map[child_y][child_x] == -1:
+                if TERRAIN_MAP[child_y][child_x] == -1:
                     print("ending because the element was found to be in the lake")
                     continue
 
@@ -116,15 +129,15 @@ class AStarPlanner:
 
                 child_node = Node(child_x, child_y, current_node)
                 child_node.parent = current_node
+                child_node.cost_t = current_node.cost_t + self.calc_t_cost(current_node, child_node)
                 child_node.cost_g = current_node.cost_g + cost
                 child_node.cost_h = self.calc_h_cost(child_node)
-                child_node.cost_t = self.calc_t_cost(current_node, child_node)
-                child_node.cost_f = child_node.cost_g + (child_node.cost_t * TERRAIN_WEIGHT) + child_node.cost_h
+                child_node.cost_f = (child_node.cost_t * TERRAIN_WEIGHT) + child_node.cost_h
                 # child_node.cost_f = child_node.cost_t + child_node.cost_h
-                # child_node.cost_f = child_node.cost_t 
+                # child_node.cost_f = child_node.cost_t + child_node.cost_g
 
                 for n in open_list:
-                    if child_node == n and child_node.cost_f > n.cost_f:
+                    if child_node == n and child_node.cost_g > n.cost_g:
                         continue
                 
                 heapq.heappush(open_list, child_node)
@@ -133,21 +146,24 @@ class AStarPlanner:
     @staticmethod
     def calc_t_cost(current, child):
         #Uphill
-        if terrain_map[current.y][current.x] < terrain_map[child.y][child.x]:
-            return BASE_TRAVERSAL_COST + 1
-        elif terrain_map[current.y][current.x] > terrain_map[child.y][child.x]:
-            return BASE_TRAVERSAL_COST - 0.5
+        if TERRAIN_MAP[current.y][current.x] < TERRAIN_MAP[child.y][child.x]:
+            return BASE_TRAVERSAL_COST + UPHILL_COST
+        elif TERRAIN_MAP[current.y][current.x] > TERRAIN_MAP[child.y][child.x]:
+            return BASE_TRAVERSAL_COST - DOWNHILL_GAIN
         else:
             return BASE_TRAVERSAL_COST
         
     def calc_h_cost(self, node):
         return HEURISTIC_WEIGHT * math.sqrt((node.x - self.end_node.x)**2 + (node.y - self.end_node.y)**2)
     
+    # def get_path_t_cost(self):
+    #     t_cost = 0
+    #     for node in self.path:
+    #         t_cost += node.cost_t
+    #     return t_cost
+
     def get_path_t_cost(self):
-        t_cost = 0
-        for node in self.path:
-            t_cost += node.cost_t
-        return t_cost
+        return self.path[-1].cost_t
         
 
     
@@ -156,9 +172,9 @@ if __name__ == "__main__":
     start_node = Node(START_COORDS[0], START_COORDS[1], None)
     end_node = Node(END_COORDS[0], END_COORDS[1], None)
 
-    planner = AStarPlanner(start_node=start_node, end_node=end_node, terrain_map=terrain_map)
+    planner = AStarPlanner(start_node=start_node, end_node=end_node, terrain_map=TERRAIN_MAP)
     fig, ax = plt.subplots()
-    plt.imshow(np.array(terrain_map), cmap='terrain')
+    plt.imshow(np.array(TERRAIN_MAP), cmap='terrain')
     plt.colorbar()
 
     ax.grid(True)
@@ -182,6 +198,10 @@ if __name__ == "__main__":
         verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     ax.text(0.45, 0.95, f"Base Traversal Cost = {BASE_TRAVERSAL_COST}\nHeuristic Weight = x{HEURISTIC_WEIGHT}", transform=ax.transAxes, fontsize=14,
         verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+    ticks_x = np.arange(-0.5, len(TERRAIN_MAP[0]), 1)
+    ticks_y = np.arange(-0.5, len(TERRAIN_MAP), 1)
+    ax.set_xticks(ticks_x)
+    ax.set_yticks(ticks_y)
     plt.show()
 
     for p in path:
