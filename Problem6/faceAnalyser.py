@@ -32,11 +32,12 @@ def main():
             print("Invalid Image")
             break
         if emotion:
-            frame = cv2.putText(frame, f"{emotion}: {score}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            cv2.imshow("FER", frame)
+            if len(sys.argv) <= 1:
+                frame = cv2.putText(frame, f"{emotion}: {score}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                cv2.imshow("FER", frame)
             emotion_data = face_detector.detect_emotions(frame)[0]['emotions']
             frameCount += 1
-            print(emotion_data)
+            # print(emotion_data)
             record['timestamp'].append(int(time.time() - time_start))
             cpu_list.append(psutil.cpu_percent())
             # record['cpu_percentage'].append(psutil.cpu_percent(interval=1))
